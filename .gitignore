@@ -1,0 +1,11 @@
+node_modules
+dist
+.DS_Store
+*.local
+.vite
+
+# local / agent artifacts
+.mimocode
+.playwright-cli
+vite.log
+screenshot-app.png
