@@ -26,8 +26,14 @@ export function ToastStack() {
 
   useEffect(() => {
     listeners.add(setList);
+    const onAppToast = (e: Event) => {
+      const text = (e as CustomEvent<string>).detail;
+      if (text) toast(text);
+    };
+    window.addEventListener('app-toast', onAppToast);
     return () => {
       listeners.delete(setList);
+      window.removeEventListener('app-toast', onAppToast);
     };
   }, []);
 

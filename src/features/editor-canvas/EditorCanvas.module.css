@@ -93,6 +93,25 @@
   outline-offset: 3px;
 }
 
+.frameOverflow {
+  box-shadow:
+    0 10px 30px rgba(28, 25, 23, 0.08),
+    inset 0 -3px 0 0 #f59e0b;
+}
+
+.truncateHint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 16px 8px;
+  font-size: 11px;
+  color: #92400e;
+  background: linear-gradient(to top, #fffbeb 40%, transparent);
+  text-align: center;
+  pointer-events: none;
+}
+
 .inner {
   position: relative;
   overflow: hidden;

@@ -9,7 +9,6 @@ import styles from './PropertyPanel.module.css';
 interface Props {
   doc: ResumeDocument | null;
   locked: boolean;
-  onToggleLockDemo: () => void;
 }
 
 const TYPE_LABEL: Record<SectionType, string> = {
@@ -23,7 +22,7 @@ const TYPE_LABEL: Record<SectionType, string> = {
   custom: '自定义',
 };
 
-export function PropertyPanel({ doc, locked, onToggleLockDemo }: Props) {
+export function PropertyPanel({ doc, locked }: Props) {
   const selectedSectionId = useArchiveStore((s) => s.selectedSectionId);
   const selectSection = useArchiveStore((s) => s.selectSection);
   const updateSectionTitle = useArchiveStore((s) => s.updateSectionTitle);
@@ -118,12 +117,15 @@ export function PropertyPanel({ doc, locked, onToggleLockDemo }: Props) {
       )}
 
       <div className={styles.section}>
-        <h3 className={styles.heading}>A4 溢出闸门（预览）</h3>
-        <p className={styles.sub}>正式检测在 M3.5；当前可切换演示写入锁。</p>
-        <Button variant={locked ? 'danger' : 'ghost'} className={styles.blockBtn} onClick={onToggleLockDemo}>
-          {locked ? '解除写入锁（演示）' : '模拟写入锁（演示）'}
-        </Button>
-        {locked ? <p className={styles.warn}>写入已锁定：请加页或删减内容</p> : null}
+        <h3 className={styles.heading}>A4 页高</h3>
+        <p className={styles.sub}>
+          内容超出时会提示「加一页」；也可继续编辑、删减内容使高度回落。
+        </p>
+        {locked ? (
+          <p className={styles.warn}>内容超出 A4</p>
+        ) : (
+          <p className={styles.sub}>当前未溢出</p>
+        )}
       </div>
 
       <div className={styles.section}>

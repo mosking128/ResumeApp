@@ -5,7 +5,10 @@ import {
   createDefaultSection,
   createId,
   isSingletonSection,
+  MAX_PAGES,
+  resolveTemplateId,
   type ArchiveMeta,
+  type PageOverflowState,
   type ResumeDocument,
   type SectionType,
 } from '@/domain/types';
@@ -16,7 +19,15 @@ import {
   moveSectionInColumn,
   removeSectionId,
 } from '@/domain/layout';
+import { measurePage } from '@/domain/pageMeasure';
 import * as db from '@/storage/db';
+
+const EMPTY_OVERFLOW: PageOverflowState = {
+  overflowingPageId: null,
+  overflowPx: 0,
+  inputLocked: false,
+  pendingAddPageAfterId: null,
+};
 
 function deepClone<T>(v: T): T {
   return structuredClone(v);
@@ -35,6 +46,9 @@ interface ArchiveState {
   lastSavedAt: number | null;
   scale: number;
   selectedSectionId: string | null;
+  overflow: PageOverflowState;
+  /** 最近一次测量到的内容区高度（px） */
+  lastContentAreaHeight: number;
 
   hydrate: () => Promise<void>;
   createArchive: (name?: string) => Promise<void>;
@@ -50,6 +64,15 @@ interface ArchiveState {
   addPage: () => void;
   removePage: (pageId: string) => void;
   getSavePayload: () => ResumeDocument | null;
+
+  reportPageHeight: (
+    pageId: string,
+    contentAreaHeight: number,
+    columnHeights: number[],
+  ) => void;
+  confirmAddPage: () => void;
+  cancelAddPage: () => void;
+  dismissOverflowModal: () => void;
 
   selectSection: (id: string | null) => void;
   addSection: (type: SectionType) => void;
@@ -99,6 +122,8 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
   lastSavedAt: null,
   scale: 1,
   selectedSectionId: null,
+  overflow: { ...EMPTY_OVERFLOW },
+  lastContentAreaHeight: 0,
 
   hydrate: async () => {
     if (get().hydrated || hydrating) return;
@@ -162,6 +187,7 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
       doc,
       dirty: false,
       selectedSectionId: null,
+      overflow: { ...EMPTY_OVERFLOW },
       error: doc ? null : '档案文档缺失',
     });
   },
@@ -303,6 +329,68 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
       ...d,
       pages: d.pages.filter((p) => p.id !== pageId),
     }));
+    set({ overflow: { ...EMPTY_OVERFLOW } });
+  },
+
+  reportPageHeight: (pageId, contentAreaHeight, columnHeights) => {
+    const { overflow, doc } = get();
+    if (!doc) return;
+    const result = measurePage({ contentAreaHeight, columnHeights });
+    set({ lastContentAreaHeight: contentAreaHeight });
+
+    // 回落到页内：清除警示
+    if (!result.isOverflow) {
+      if (overflow.overflowingPageId) {
+        set({ overflow: { ...EMPTY_OVERFLOW } });
+      }
+      return;
+    }
+
+    // 仍在溢出：更新像素，不重新弹模态
+    if (overflow.overflowingPageId === pageId) {
+      set({
+        overflow: {
+          ...overflow,
+          overflowPx: result.overflowPx,
+          // 保持 inputLocked=false — 始终允许编辑
+          inputLocked: false,
+        },
+      });
+      return;
+    }
+
+    // 新溢出：底部提示「是否加页」（非阻塞），编辑不受限
+    set({
+      overflow: {
+        overflowingPageId: pageId,
+        overflowPx: result.overflowPx,
+        inputLocked: false,
+        pendingAddPageAfterId: null,
+      },
+    });
+  },
+
+  confirmAddPage: () => {
+    const { doc } = get();
+    if (!doc) return;
+    if (doc.pages.length >= MAX_PAGES) {
+      toastMaxPages();
+      return;
+    }
+    const templateId = resolveTemplateId(doc.templateId);
+    get().updateDoc((d) => ({
+      ...d,
+      pages: [...d.pages, createBlankPage(templateId)],
+    }));
+    set({ overflow: { ...EMPTY_OVERFLOW } });
+  },
+
+  cancelAddPage: () => {
+    set({ overflow: { ...EMPTY_OVERFLOW } });
+  },
+
+  dismissOverflowModal: () => {
+    set({ overflow: { ...EMPTY_OVERFLOW } });
   },
 
   getSavePayload: () => get().doc,
@@ -364,6 +452,12 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
     }));
   },
 }));
+
+function toastMaxPages() {
+  window.dispatchEvent(
+    new CustomEvent('app-toast', { detail: '已达到最大 3 页，请删减内容后再加页。' }),
+  );
+}
 
 function insertIntoPages(
   pages: ResumeDocument['pages'],

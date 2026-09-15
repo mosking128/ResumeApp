@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/Button';
-import { Modal } from '@/components/Modal';
 import { ToastStack, toast } from '@/components/Toast';
-import { MAX_PAGES, type SectionType } from '@/domain/types';
+import { MAX_PAGES } from '@/domain/types';
 import { TopBar } from '@/features/app-shell/TopBar';
 import { useAutosave, useHydrateApp } from '@/features/autosave/useAutosave';
 import { EditorCanvas } from '@/features/editor-canvas/EditorCanvas';
@@ -24,16 +23,18 @@ export default function App() {
   const lastSavedAt = useArchiveStore((s) => s.lastSavedAt);
   const scale = useArchiveStore((s) => s.scale);
   const selectedSectionId = useArchiveStore((s) => s.selectedSectionId);
+  const overflow = useArchiveStore((s) => s.overflow);
   const autosaveIntervalMs = useSettingsStore((s) => s.settings.autosaveIntervalMs);
 
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
-  const [inputLocked, setInputLocked] = useState(false);
-  const [overflowOpen, setOverflowOpen] = useState(false);
 
   const pages = doc?.pages ?? [];
   const sections = doc?.sections ?? [];
   const templateId = doc?.templateId ?? 'steady-classic';
   const pageCount = pages.length;
+  // 溢出：截断显示 + 非阻塞提示，编辑始终可用
+  const overflowing = overflow.overflowingPageId != null;
+  const atMaxPages = pageCount >= MAX_PAGES;
 
   useEffect(() => {
     if (!pages.length) return;
@@ -72,31 +73,11 @@ export default function App() {
   }, []);
 
   const handlePrint = useCallback(() => {
+    if (overflowing) {
+      toast('内容超出 A4，打印可能被裁切，建议加页或删减后再导出');
+    }
     window.requestAnimationFrame(() => window.print());
-  }, []);
-
-  const handleConfirmAddPage = useCallback(() => {
-    if (pageCount < MAX_PAGES) useArchiveStore.getState().addPage();
-    setOverflowOpen(false);
-    setInputLocked(false);
-  }, [pageCount]);
-
-  const handleCancelOverflow = useCallback(() => {
-    setOverflowOpen(false);
-    setInputLocked(true);
-    toast('已取消加页：写入已锁定（演示）');
-  }, []);
-
-  const handleToggleLockDemo = useCallback(() => {
-    setInputLocked((locked) => {
-      if (!locked) {
-        setOverflowOpen(true);
-        return true;
-      }
-      setOverflowOpen(false);
-      return false;
-    });
-  }, []);
+  }, [overflowing]);
 
   if (!hydrated) {
     return (
@@ -138,8 +119,7 @@ export default function App() {
 
       <div className={styles.body}>
         <ModulePalette
-          disabled={inputLocked}
-          onAdd={(type: SectionType) => {
+          onAdd={(type) => {
             useArchiveStore.getState().addSection(type);
             toast('已添加模块');
           }}
@@ -156,30 +136,32 @@ export default function App() {
           onAddPage={() => useArchiveStore.getState().addPage()}
           onRemovePage={(id) => useArchiveStore.getState().removePage(id)}
           onAddSection={(type) => useArchiveStore.getState().addSection(type)}
+          overflowingPageId={overflow.overflowingPageId}
         />
-        <PropertyPanel doc={doc} locked={inputLocked} onToggleLockDemo={handleToggleLockDemo} />
+        <PropertyPanel doc={doc} locked={false} />
       </div>
 
-      <Modal
-        open={overflowOpen}
-        title="内容超出 A4"
-        onClose={handleCancelOverflow}
-        footer={
-          <>
-            <Button variant="ghost" onClick={handleCancelOverflow}>
-              取消
-            </Button>
-            <Button variant="primary" disabled={pageCount >= MAX_PAGES} onClick={handleConfirmAddPage}>
-              加一页
-            </Button>
-          </>
-        }
-      >
-        <p style={{ margin: 0 }}>
-          是否新增一页继续编辑？不加页则无法继续写入，可先删减内容。
-          {pageCount >= MAX_PAGES ? '（已达最大 3 页）' : ''}
-        </p>
-      </Modal>
+      {overflowing ? (
+        <div className={styles.overflowBanner} role="status">
+          <span className={styles.overflowIcon} aria-hidden>
+            ⚠
+          </span>
+          <span>
+            内容超出 A4 约 <strong>{overflow.overflowPx}px</strong>
+            ，超出部分已在画布截断。是否加一页？
+          </span>
+          <Button
+            variant="primary"
+            disabled={atMaxPages}
+            onClick={() => {
+              useArchiveStore.getState().confirmAddPage();
+              toast(atMaxPages ? '已达最大 3 页' : '已添加空白页');
+            }}
+          >
+            {atMaxPages ? '已达上限' : '加一页'}
+          </Button>
+        </div>
+      ) : null}
 
       <ToastStack />
     </div>

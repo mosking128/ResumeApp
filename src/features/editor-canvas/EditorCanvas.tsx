@@ -1,9 +1,19 @@
-import type { CSSProperties } from 'react';
+import { useEffect, type CSSProperties } from 'react';
 import { Button } from '@/components/Button';
 import { toast } from '@/components/Toast';
 import { SectionPreview } from '@/modules/SectionPreview';
-import { A4, MAX_PAGES, TEMPLATES, resolveTemplateId, type ResumeDocument, type ResumePage, type TemplateSpec } from '@/domain/types';
+import {
+  A4,
+  MAX_PAGES,
+  TEMPLATES,
+  resolveTemplateId,
+  type ResumeDocument,
+  type ResumePage,
+  type SectionType,
+  type TemplateSpec,
+} from '@/domain/types';
 import { getAllowedAddTypes } from '@/domain/layout';
+import { useArchiveStore } from '@/stores/archiveStore';
 import styles from './EditorCanvas.module.css';
 
 interface Props {
@@ -17,7 +27,8 @@ interface Props {
   onSelectSection: (id: string) => void;
   onAddPage: () => void;
   onRemovePage: (id: string) => void;
-  onAddSection: (type: import('@/domain/types').SectionType) => void;
+  onAddSection: (type: SectionType) => void;
+  overflowingPageId?: string | null;
 }
 
 function pageStyle(template: TemplateSpec): CSSProperties {
@@ -35,6 +46,11 @@ function pageStyle(template: TemplateSpec): CSSProperties {
     paddingLeft: contentBox.paddingLeft,
     paddingRight: contentBox.paddingRight,
   } as CSSProperties;
+}
+
+function getContentAreaHeight(template: TemplateSpec): number {
+  const paddingTop = template.id === 'clean-navy' ? 28 : template.contentBox.paddingTop;
+  return A4.height - paddingTop - template.contentBox.paddingBottom;
 }
 
 function columnStyle(widthRatio: number): CSSProperties {
@@ -56,12 +72,53 @@ export function EditorCanvas({
   onAddPage,
   onRemovePage,
   onAddSection,
+  overflowingPageId = null,
 }: Props) {
   const template =
     TEMPLATES.find((t) => t.id === resolveTemplateId(templateId)) ?? TEMPLATES[0]!;
   const canAdd = pages.length < MAX_PAGES;
   const emptyDoc = { sections, pages } as ResumeDocument;
   const addable = getAllowedAddTypes(emptyDoc);
+  const contentAreaHeight = getContentAreaHeight(template);
+
+  // 测量所有页（DOM 就绪后）
+  useEffect(() => {
+    let raf = 0;
+    const nodes = document.querySelectorAll<HTMLElement>('[data-page-id] [data-measure-column]');
+    const report = () => {
+      const byPage = new Map<string, number[]>();
+      nodes.forEach((el) => {
+        const pageId = el.getAttribute('data-page-id-for') ?? '';
+        if (!pageId) return;
+        const list = byPage.get(pageId) ?? [];
+        list.push(el.scrollHeight);
+        byPage.set(pageId, list);
+      });
+      byPage.forEach((heights, pageId) => {
+        useArchiveStore.getState().reportPageHeight(pageId, contentAreaHeight, heights);
+      });
+    };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(report);
+    };
+
+    const ro = new ResizeObserver(schedule);
+    nodes.forEach((n) => ro.observe(n));
+    // 监听 document 中所有 measure 列（节点可能因 key 变化）
+    const pageObserver = new ResizeObserver(schedule);
+    document.querySelectorAll('[data-page-id]').forEach((p) => pageObserver.observe(p));
+    schedule();
+
+    // sections 变化时再测一次
+    const t = window.setTimeout(schedule, 0);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+      ro.disconnect();
+      pageObserver.disconnect();
+    };
+  }, [pages, sections, contentAreaHeight, scale]);
 
   return (
     <main className={styles.main}>
@@ -69,7 +126,7 @@ export function EditorCanvas({
         <div className={styles.toolbarLeft}>
           <span className={styles.toolbarTitle}>A4 画布</span>
           <span className={styles.toolbarMeta}>
-            {template.name} · 选中后可在右侧编辑
+            {template.name} · 内容区 {Math.round(contentAreaHeight)}px
           </span>
         </div>
         <div className={styles.toolbarRight}>
@@ -116,6 +173,7 @@ export function EditorCanvas({
                     'page-frame',
                     styles.frame,
                     pageSelected ? styles.selected : '',
+                    page.id === overflowingPageId ? styles.frameOverflow : '',
                     index < pages.length - 1 ? 'print-break-after' : '',
                   ]
                     .filter(Boolean)
@@ -152,6 +210,8 @@ export function EditorCanvas({
                           className={styles.column}
                           style={columnStyle(col.widthRatio)}
                           data-column-index={colIndex}
+                          data-measure-column
+                          data-page-id-for={page.id}
                         >
                           {col.sectionIds.length === 0 ? (
                             <div className={styles.emptyCol}>
@@ -183,6 +243,11 @@ export function EditorCanvas({
                         </div>
                       ))}
                     </div>
+                    {page.id === overflowingPageId ? (
+                      <div className={styles.truncateHint} aria-hidden>
+                        ⋯ 已截断，下方内容见「是否加页」提示
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>
