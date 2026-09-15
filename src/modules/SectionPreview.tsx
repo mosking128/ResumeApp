@@ -49,19 +49,24 @@ function renderBody(section: Section, photoUrl?: string | null) {
         intent?: string;
         fields: { id: string; label: string; value: string }[];
       };
-      const fields = p.fields ?? [];
+      const fields = (p.fields ?? []).filter((f) => f.label || f.value);
+      const intent = (p.intent ?? '').trim();
       return (
         <div className={styles.basic}>
           <div className={styles.basicMain}>
             <div className={styles.name}>{p.name || '姓名'}</div>
-            <div className={styles.intent}>
-              求职意向：
-              <span className={styles.intentText}>{p.intent || '（填写求职意向）'}</span>
-            </div>
+            {intent ? (
+              <div className={styles.intent}>
+                <span className={styles.intentLabel}>求职意向：</span>
+                <span className={styles.intentText}>{intent}</span>
+              </div>
+            ) : null}
             <div className={styles.contactGrid}>
               {fields.map((f) => (
                 <span key={f.id} className="rv-contact">
-                  {f.label}：{f.value || '—'}
+                  <span className={styles.fieldLabel}>{f.label}</span>
+                  <span className={styles.fieldSep}>：</span>
+                  <span className={styles.fieldValue}>{f.value || '—'}</span>
                 </span>
               ))}
             </div>

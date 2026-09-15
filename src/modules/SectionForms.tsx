@@ -152,10 +152,10 @@ export function BasicForm({ section, locked, onPayload }: FormProps<'basic'>) {
     <div className={styles.stack}>
       <TextField label="姓名" value={p.name} disabled={locked} onChange={(name) => onPayload({ ...p, name })} />
       <TextField
-        label="求职意向"
+        label="求职意向（可选）"
         value={p.intent ?? ''}
         disabled={locked}
-        placeholder="如 市场专员 / 后端工程师"
+        placeholder="留空则画布不显示；如 市场专员 / 后端工程师"
         onChange={(intent) => onPayload({ ...p, intent })}
       />
 

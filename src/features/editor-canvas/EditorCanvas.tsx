@@ -48,6 +48,7 @@ function pageStyle(template: TemplateSpec): CSSProperties {
   const { tokens, contentBox } = template;
   const paddingTop = template.id === 'clean-navy' ? 28 : contentBox.paddingTop;
   return {
+    boxSizing: 'border-box',
     width: A4.width,
     height: A4.height,
     background: tokens.bg,
@@ -257,6 +258,7 @@ export function EditorCanvas({
                     ]
                       .filter(Boolean)
                       .join(' ')}
+                    data-print-page={index}
                     onClick={() => onSelectPage(page.id)}
                     role="group"
                     aria-label={`第 ${index + 1} 页 A4`}
@@ -301,6 +303,7 @@ export function EditorCanvas({
                                   id={`empty-${col.id}`}
                                   data-column-id={col.id}
                                   data-type="empty-drop"
+                                  data-empty-col
                                   className={styles.emptyCol}
                                 >
                                   <span className={styles.emptyIcon} aria-hidden>
@@ -338,7 +341,7 @@ export function EditorCanvas({
                         ))}
                       </div>
                       {page.id === overflowingPageId ? (
-                        <div className={styles.truncateHint} aria-hidden>
+                        <div className={styles.truncateHint} data-truncate-hint aria-hidden>
                           ⋯ 已截断，下方内容见「是否加页」提示
                         </div>
                       ) : null}

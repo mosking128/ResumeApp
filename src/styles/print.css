@@ -16,7 +16,12 @@
     overflow: visible !important;
   }
 
-  /* 壳层全部去掉，避免占版面 */
+  /* 强制打印背景色（藏青横幅、模板色块） */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .app-shell {
     display: block !important;
     width: auto;
@@ -33,29 +38,16 @@
   .canvas-toolbar,
   .page-label,
   .toast-stack,
-  .modal-root {
+  .modal-root,
+  [data-drag-handle],
+  .sectionDragRow,
+  [data-empty-col],
+  [data-truncate-hint] {
     display: none !important;
   }
 
-  .canvas-viewport {
-    display: block !important;
-    width: auto;
-    height: auto;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    background: #fff !important;
-  }
-
-  .canvas-stack {
-    display: block !important;
-    width: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    gap: 0 !important;
-    transform: none !important;
-  }
-
+  .canvas-viewport,
+  .canvas-stack,
   .pageWrap {
     display: block !important;
     width: auto !important;
@@ -63,24 +55,25 @@
     margin: 0 !important;
     padding: 0 !important;
     gap: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+    transform: none !important;
   }
 
-  /* 用物理 mm，避免 794×1123px 略超 A4 导致多一页 */
+  /* 纸张：只固定 page-inner，避免与 frame 双重定高挤压内容 */
   .page-frame {
     display: block !important;
     width: 210mm !important;
-    height: 297mm !important;
-    max-height: 297mm !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     outline: none !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     break-inside: avoid;
     page-break-inside: avoid;
-    /* 默认不强制分页；非末页由 .print-break-after 处理 */
     break-after: auto;
     page-break-after: auto;
   }
@@ -91,24 +84,26 @@
   }
 
   .page-inner {
+    box-sizing: border-box !important;
     width: 210mm !important;
     height: 297mm !important;
     max-width: 210mm !important;
     max-height: 297mm !important;
     margin: 0 !important;
-    /* 内边距沿用屏幕模板（inline），不要在打印里改边距 */
+    /* 保持与屏幕一致的模板内边距（inline px），不要覆盖 */
     overflow: hidden !important;
     box-shadow: none !important;
     outline: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
-  /* 占位提示不进 PDF */
-  .emptyCol,
-  .emptyIcon,
-  .emptyHint,
-  .dragHandle,
-  .sectionDragRow,
-  .sectionTitleChip {
-    display: none !important;
+  /* 选中描边不进 PDF */
+  .sectionBlock,
+  .sectionSelected,
+  .frameSelected,
+  .page-frame.is-selected {
+    box-shadow: none !important;
+    outline: none !important;
   }
 }

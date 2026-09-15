@@ -13,12 +13,28 @@
 
 .intent {
   font-size: 13px;
-  font-weight: 500;
+}
+
+.intentLabel {
+  font-weight: 700;
 }
 
 .intentText {
   font-weight: 400;
-  opacity: 0.75;
+  color: #111;
+}
+
+.fieldLabel {
+  font-weight: 700;
+}
+
+.fieldSep {
+  font-weight: 700;
+}
+
+.fieldValue {
+  font-weight: 400;
+  color: #111;
 }
 
 .basic {
