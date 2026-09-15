@@ -1,0 +1,62 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.viewport {
+  position: relative;
+  overflow: hidden;
+  background: #1c1917;
+  border-radius: 8px;
+  margin: 0 auto;
+  cursor: grab;
+  touch-action: none;
+}
+
+.viewport:active {
+  cursor: grabbing;
+}
+
+.img {
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+  transform-origin: center center;
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  box-shadow:
+    0 0 0 9999px rgba(28, 25, 23, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.zoomRow {
+  display: grid;
+  grid-template-columns: 40px 1fr 48px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.aspectRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.muted {
+  opacity: 0.8;
+}

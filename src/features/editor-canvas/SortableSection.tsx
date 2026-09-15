@@ -11,9 +11,17 @@ interface Props {
   selected: boolean;
   columnId: string;
   onSelect: (id: string) => void;
+  photoUrl?: string | null;
 }
 
-export function SortableSection({ section, template, selected, columnId, onSelect }: Props) {
+export function SortableSection({
+  section,
+  template,
+  selected,
+  columnId,
+  onSelect,
+  photoUrl,
+}: Props) {
   const {
     attributes,
     listeners,
@@ -67,7 +75,7 @@ export function SortableSection({ section, template, selected, columnId, onSelec
         </button>
         <span className={styles.sectionTitleChip}>{section.title}</span>
       </div>
-      <SectionPreview section={section} template={template} />
+      <SectionPreview section={section} template={template} photoUrl={photoUrl} />
     </div>
   );
 }

@@ -8,6 +8,12 @@ import {
   type ResumeDocument,
 } from '@/domain/types';
 
+export interface StoredBlob {
+  id: string;
+  mime: string;
+  bytes: Blob;
+}
+
 interface ResumeDB extends DBSchema {
   archives: {
     key: string;
@@ -23,17 +29,21 @@ interface ResumeDB extends DBSchema {
     key: string;
     value: AppSettings;
   };
+  blobs: {
+    key: string;
+    value: StoredBlob;
+  };
 }
 
 const DB_NAME = 'resume-app';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase<ResumeDB>> | null = null;
 
 export function getDb(): Promise<IDBPDatabase<ResumeDB>> {
   if (!dbPromise) {
     dbPromise = openDB<ResumeDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db, oldVersion) {
         if (!db.objectStoreNames.contains('archives')) {
           const store = db.createObjectStore('archives', { keyPath: 'id' });
           store.createIndex('by-updatedAt', 'updatedAt');
@@ -44,6 +54,9 @@ export function getDb(): Promise<IDBPDatabase<ResumeDB>> {
         }
         if (!db.objectStoreNames.contains('settings')) {
           db.createObjectStore('settings');
+        }
+        if (!db.objectStoreNames.contains('blobs') && oldVersion < 2) {
+          db.createObjectStore('blobs', { keyPath: 'id' });
         }
       },
     });
@@ -97,6 +110,37 @@ export async function getSettings(): Promise<AppSettings> {
 export async function putSettings(s: AppSettings): Promise<void> {
   const db = await getDb();
   await db.put('settings', s, 'app');
+}
+
+export async function putBlob(blob: StoredBlob): Promise<void> {
+  const db = await getDb();
+  await db.put('blobs', blob);
+}
+
+export async function getBlob(id: string): Promise<StoredBlob | null> {
+  const db = await getDb();
+  return (await db.get('blobs', id)) ?? null;
+}
+
+export async function deleteBlob(id: string): Promise<void> {
+  const db = await getDb();
+  await db.delete('blobs', id);
+}
+
+export async function deleteArchiveCascade(id: string): Promise<void> {
+  const meta = await getArchive(id);
+  if (!meta) {
+    const db = await getDb();
+    await db.delete('archives', id);
+    return;
+  }
+  const doc = await getDocument(meta.documentId);
+  if (doc?.photoBlobId) {
+    await deleteBlob(doc.photoBlobId);
+  }
+  const db = await getDb();
+  await db.delete('documents', meta.documentId);
+  await db.delete('archives', id);
 }
 
 export function migrateDocument(raw: ResumeDocument): ResumeDocument {

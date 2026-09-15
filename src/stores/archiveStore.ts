@@ -49,8 +49,8 @@ interface ArchiveState {
   scale: number;
   selectedSectionId: string | null;
   overflow: PageOverflowState;
-  /** 最近一次测量到的内容区高度（px） */
   lastContentAreaHeight: number;
+  photoUrl: string | null;
 
   hydrate: () => Promise<void>;
   createArchive: (name?: string) => Promise<void>;
@@ -86,6 +86,10 @@ interface ArchiveState {
   reorderSections: (columnId: string, orderedIds: string[]) => void;
   /** dnd-kit：跨列 / 跨页移动 */
   transferSection: (sectionId: string, toColumnId: string, toIndex: number) => void;
+  /** 照片 */
+  setPhoto: (blob: Blob, meta: ResumeDocument['photoMeta']) => Promise<void>;
+  clearPhoto: () => Promise<void>;
+  refreshPhotoUrl: () => Promise<void>;
 }
 
 async function listAndPick(
@@ -130,6 +134,7 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
   selectedSectionId: null,
   overflow: { ...EMPTY_OVERFLOW },
   lastContentAreaHeight: 0,
+  photoUrl: null,
 
   hydrate: async () => {
     if (get().hydrated || hydrating) return;
@@ -141,7 +146,8 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
         const meta = list.find((a) => a.id === currentId)!;
         const doc = await db.getDocument(meta.documentId);
         if (!doc) throw new Error('档案文档缺失');
-        set({ hydrated: true, list, currentId, doc, dirty: false, error: null });
+        set({ hydrated: true, list, currentId, doc, dirty: false, error: null, photoUrl: null });
+        void get().refreshPhotoUrl();
         return;
       }
       const created = await persistArchive('未命名简历');
@@ -153,6 +159,7 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
         dirty: false,
         lastSavedAt: Date.now(),
         error: null,
+        photoUrl: null,
       });
     } catch (e) {
       set({
@@ -176,6 +183,7 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
         dirty: false,
         lastSavedAt: Date.now(),
         error: null,
+        photoUrl: null,
       });
     } catch (e) {
       set({ error: e instanceof Error ? e.message : '创建失败' });
@@ -195,7 +203,9 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
       selectedSectionId: null,
       overflow: { ...EMPTY_OVERFLOW },
       error: doc ? null : '档案文档缺失',
+      photoUrl: null,
     });
+    void get().refreshPhotoUrl();
   },
 
   renameArchive: async (id, name) => {
@@ -223,10 +233,20 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
     if (!src) return;
     const archiveId = createId();
     const now = Date.now();
+    let photoBlobId = src.photoBlobId;
+    if (src.photoBlobId) {
+      const blob = await db.getBlob(src.photoBlobId);
+      if (blob) {
+        const newBlobId = createId();
+        await db.putBlob({ ...blob, id: newBlobId });
+        photoBlobId = newBlobId;
+      }
+    }
     const doc: ResumeDocument = {
       ...deepClone(src),
       id: createId(),
       archiveId,
+      photoBlobId,
       createdAt: now,
       updatedAt: now,
     };
@@ -245,7 +265,7 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
   },
 
   removeArchive: async (id) => {
-    await db.deleteArchive(id);
+    await db.deleteArchiveCascade(id);
     const { list, currentId } = await listAndPick();
     if (!currentId) {
       const created = await persistArchive('未命名简历');
@@ -254,12 +274,14 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
         currentId: created.currentId,
         doc: created.doc,
         dirty: false,
+        photoUrl: null,
       });
       return;
     }
     const meta = list.find((a) => a.id === currentId)!;
     const doc = await db.getDocument(meta.documentId);
-    set({ list, currentId, doc, dirty: false });
+    set({ list, currentId, doc, dirty: false, photoUrl: null });
+    void get().refreshPhotoUrl();
   },
 
   saveNow: async () => {
@@ -474,6 +496,60 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
       ...d,
       pages: transferSection(d.pages, sectionId, toColumnId, toIndex),
     }));
+  },
+
+  setPhoto: async (blob, meta) => {
+    const { doc } = get();
+    if (!doc || !meta) return;
+    const id = createId();
+    await db.putBlob({
+      id,
+      mime: blob.type || 'image/jpeg',
+      bytes: blob,
+    });
+    const old = doc.photoBlobId;
+    get().updateDoc((d) => ({
+      ...d,
+      photoBlobId: id,
+      photoMeta: meta,
+    }));
+    if (old && old !== id) await db.deleteBlob(old);
+    await get().refreshPhotoUrl();
+    await get().saveNow();
+  },
+
+  clearPhoto: async () => {
+    const { doc } = get();
+    if (!doc?.photoBlobId) {
+      get().updateDoc((d) => ({ ...d, photoBlobId: undefined, photoMeta: undefined }));
+      set({ photoUrl: null });
+      return;
+    }
+    const old = doc.photoBlobId;
+    get().updateDoc((d) => ({ ...d, photoBlobId: undefined, photoMeta: undefined }));
+    await db.deleteBlob(old);
+    set({ photoUrl: null });
+    await get().saveNow();
+  },
+
+  refreshPhotoUrl: async () => {
+    const { doc, photoUrl } = get();
+    if (!doc?.photoBlobId) {
+      if (photoUrl) {
+        URL.revokeObjectURL(photoUrl);
+        set({ photoUrl: null });
+      }
+      return;
+    }
+    const stored = await db.getBlob(doc.photoBlobId);
+    if (!stored) {
+      if (photoUrl) URL.revokeObjectURL(photoUrl);
+      set({ photoUrl: null });
+      return;
+    }
+    const url = URL.createObjectURL(stored.bytes);
+    if (photoUrl) URL.revokeObjectURL(photoUrl);
+    set({ photoUrl: url });
   },
 }));
 

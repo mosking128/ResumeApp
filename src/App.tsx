@@ -24,6 +24,7 @@ export default function App() {
   const scale = useArchiveStore((s) => s.scale);
   const selectedSectionId = useArchiveStore((s) => s.selectedSectionId);
   const overflow = useArchiveStore((s) => s.overflow);
+  const photoUrl = useArchiveStore((s) => s.photoUrl);
   const autosaveIntervalMs = useSettingsStore((s) => s.settings.autosaveIntervalMs);
 
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
@@ -137,6 +138,7 @@ export default function App() {
           onRemovePage={(id) => useArchiveStore.getState().removePage(id)}
           onAddSection={(type) => useArchiveStore.getState().addSection(type)}
           overflowingPageId={overflow.overflowingPageId}
+          photoUrl={photoUrl}
         />
         <PropertyPanel doc={doc} locked={false} />
       </div>

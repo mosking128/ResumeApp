@@ -41,6 +41,7 @@ interface Props {
   onRemovePage: (id: string) => void;
   onAddSection: (type: SectionType) => void;
   overflowingPageId?: string | null;
+  photoUrl?: string | null;
 }
 
 function pageStyle(template: TemplateSpec): CSSProperties {
@@ -85,6 +86,7 @@ export function EditorCanvas({
   onRemovePage,
   onAddSection,
   overflowingPageId = null,
+  photoUrl = null,
 }: Props) {
   const template =
     TEMPLATES.find((t) => t.id === resolveTemplateId(templateId)) ?? TEMPLATES[0]!;
@@ -325,6 +327,7 @@ export function EditorCanvas({
                                         selected={selectedSectionId === sid}
                                         columnId={col.id}
                                         onSelect={onSelectSection}
+                                        photoUrl={photoUrl}
                                       />
                                     );
                                   })}

@@ -5,9 +5,10 @@ import styles from './SectionPreview.module.css';
 interface Props {
   section: Section;
   template: TemplateSpec;
+  photoUrl?: string | null;
 }
 
-export function SectionPreview({ section, template }: Props) {
+export function SectionPreview({ section, template, photoUrl }: Props) {
   const tid = template.id;
   const showTitle = section.type !== 'basic' && section.type !== 'objective';
 
@@ -19,7 +20,7 @@ export function SectionPreview({ section, template }: Props) {
           <span className="rv-title-rule" aria-hidden />
         </h3>
       ) : null}
-      {renderBody(section)}
+      {renderBody(section, photoUrl)}
     </div>
   );
 }
@@ -40,7 +41,7 @@ function renderBlocks(blocks?: { id: string; label: string; body: string }[]) {
   );
 }
 
-function renderBody(section: Section) {
+function renderBody(section: Section, photoUrl?: string | null) {
   switch (section.type) {
     case 'basic': {
       const p = section.payload as {
@@ -65,9 +66,15 @@ function renderBody(section: Section) {
               ))}
             </div>
           </div>
-          <div className="rv-photo" aria-hidden>
-            <span>照片</span>
-          </div>
+          {photoUrl ? (
+            <div className={`rv-photo ${styles.photoFilled}`}>
+              <img src={photoUrl} alt="证件照" />
+            </div>
+          ) : (
+            <div className="rv-photo" aria-hidden>
+              <span>照片</span>
+            </div>
+          )}
         </div>
       );
     }

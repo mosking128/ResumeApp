@@ -1,6 +1,10 @@
+import { useRef, useState } from 'react';
 import { Button } from '@/components/Button';
 import { DateRangeField } from '@/features/date-range-field/DateRangeField';
+import { PhotoCropper } from '@/features/photo-cropper/PhotoCropper';
+import { toast } from '@/components/Toast';
 import { createBasicField, createContentBlock, createId } from '@/domain/types';
+import { useArchiveStore } from '@/stores/archiveStore';
 import type {
   ContentBlock,
   CustomItem,
@@ -122,12 +126,27 @@ function TextField({
 export function BasicForm({ section, locked, onPayload }: FormProps<'basic'>) {
   const p = section.payload;
   const fields = p.fields ?? [];
+  const photoUrl = useArchiveStore((s) => s.photoUrl);
+  const hasPhoto = Boolean(useArchiveStore((s) => s.doc?.photoBlobId));
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [cropUrl, setCropUrl] = useState<string | null>(null);
+  const [aspect] = useState<1 | 0.75>(1);
 
   const updateField = (id: string, patch: Partial<{ label: string; value: string }>) =>
     onPayload({
       ...p,
       fields: fields.map((f) => (f.id === id ? { ...f, ...patch } : f)),
     });
+
+  const onPickFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast('请选择图片文件');
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setCropUrl(url);
+  };
 
   return (
     <div className={styles.stack}>
@@ -139,6 +158,43 @@ export function BasicForm({ section, locked, onPayload }: FormProps<'basic'>) {
         placeholder="如 市场专员 / 后端工程师"
         onChange={(intent) => onPayload({ ...p, intent })}
       />
+
+      <div className={styles.blocks}>
+        <div className={styles.blocksHead}>
+          <span>证件照</span>
+        </div>
+        <div className={styles.photoRow}>
+          <div className={styles.photoThumb}>
+            {photoUrl ? <img src={photoUrl} alt="当前证件照" /> : <span>无照片</span>}
+          </div>
+          <div className={styles.photoActions}>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                void onPickFile(e.target.files?.[0]);
+                e.target.value = '';
+              }}
+            />
+            <Button variant="primary" disabled={locked} onClick={() => fileRef.current?.click()}>
+              {hasPhoto ? '更换照片' : '上传照片'}
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={locked || !hasPhoto}
+              onClick={() => {
+                void useArchiveStore.getState().clearPhoto();
+                toast('已删除照片');
+              }}
+            >
+              删除
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div className={styles.blocks}>
         <div className={styles.blocksHead}>
           <span>信息字段</span>
@@ -189,6 +245,22 @@ export function BasicForm({ section, locked, onPayload }: FormProps<'basic'>) {
           <p className={styles.hint}>已清空字段，可点击「添加字段」自定义</p>
         ) : null}
       </div>
+
+      <PhotoCropper
+        open={cropUrl != null}
+        sourceUrl={cropUrl}
+        aspect={aspect}
+        onCancel={() => {
+          if (cropUrl) URL.revokeObjectURL(cropUrl);
+          setCropUrl(null);
+        }}
+        onConfirm={(blob, meta) => {
+          void useArchiveStore.getState().setPhoto(blob, meta);
+          if (cropUrl) URL.revokeObjectURL(cropUrl);
+          setCropUrl(null);
+          toast('照片已保存');
+        }}
+      />
     </div>
   );
 }
