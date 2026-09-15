@@ -11,3 +11,5 @@ release
 vite.log
 screenshot*.png
 assets/
+build/
+*.log
