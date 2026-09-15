@@ -99,4 +99,11 @@ docs/
 
 ## License
 
-Personal use only until a public license is added.
+This project is licensed under the **[PolyForm Noncommercial License 1.0.0](./LICENSE)**.
+
+- **Allowed:** personal / educational / non-profit use and private modifications
+- **Not allowed:** any commercial use (including SaaS, embedding in paid products, resale)
+
+See the full terms in [`LICENSE`](./LICENSE).
+
+Required Notice: Copyright Mosking (https://github.com/mosking128/ResumeApp)

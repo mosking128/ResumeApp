@@ -99,4 +99,11 @@ docs/
 
 ## License
 
-个人使用，未添加开源 License 前请勿当作公开可商用软件分发。
+本项目使用 **[PolyForm Noncommercial License 1.0.0](./LICENSE)**。
+
+- 允许：个人学习、非营利/教育用途、自用改版
+- **禁止：任何形式的商业用途**（含付费服务、商业产品内置、售卖等）
+
+完整条款见仓库根目录 [`LICENSE`](./LICENSE)。
+
+Required Notice: Copyright Mosking (https://github.com/mosking128/ResumeApp)
