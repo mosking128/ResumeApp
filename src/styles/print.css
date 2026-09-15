@@ -105,7 +105,10 @@
   /* 占位提示不进 PDF */
   .emptyCol,
   .emptyIcon,
-  .emptyHint {
+  .emptyHint,
+  .dragHandle,
+  .sectionDragRow,
+  .sectionTitleChip {
     display: none !important;
   }
 }

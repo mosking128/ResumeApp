@@ -18,6 +18,8 @@ import {
   hasSectionType,
   moveSectionInColumn,
   removeSectionId,
+  reorderSectionIds,
+  transferSection,
 } from '@/domain/layout';
 import { measurePage } from '@/domain/pageMeasure';
 import * as db from '@/storage/db';
@@ -80,6 +82,10 @@ interface ArchiveState {
   updateSectionTitle: (sectionId: string, title: string) => void;
   patchSectionPayload: (sectionId: string, payload: unknown) => void;
   moveSection: (sectionId: string, direction: -1 | 1) => void;
+  /** dnd-kit：同一列重排 */
+  reorderSections: (columnId: string, orderedIds: string[]) => void;
+  /** dnd-kit：跨列 / 跨页移动 */
+  transferSection: (sectionId: string, toColumnId: string, toIndex: number) => void;
 }
 
 async function listAndPick(
@@ -449,6 +455,24 @@ export const useArchiveStore = create<ArchiveState>((set, get) => ({
     get().updateDoc((d) => ({
       ...d,
       pages: moveSectionInColumn(d.pages, loc.columnId, sectionId, nextIndex),
+    }));
+  },
+
+  reorderSections: (columnId, orderedIds) => {
+    const { doc } = get();
+    if (!doc) return;
+    get().updateDoc((d) => ({
+      ...d,
+      pages: reorderSectionIds(d.pages, columnId, orderedIds),
+    }));
+  },
+
+  transferSection: (sectionId, toColumnId, toIndex) => {
+    const { doc } = get();
+    if (!doc) return;
+    get().updateDoc((d) => ({
+      ...d,
+      pages: transferSection(d.pages, sectionId, toColumnId, toIndex),
     }));
   },
 }));

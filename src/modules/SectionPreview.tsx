@@ -12,7 +12,7 @@ export function SectionPreview({ section, template }: Props) {
   const showTitle = section.type !== 'basic' && section.type !== 'objective';
 
   return (
-    <div data-template={tid} data-section-id={section.id} className={styles.root}>
+    <div data-template={tid} className={styles.root}>
       {showTitle ? (
         <h3 className="rv-title">
           <span className="rv-title-text">{section.title}</span>

@@ -74,6 +74,40 @@ export function moveSectionInColumn(
   }));
 }
 
+/** 同一列内按新顺序重排 sectionIds */
+export function reorderSectionIds(
+  pages: ResumePage[],
+  columnId: string,
+  orderedIds: string[],
+): ResumePage[] {
+  return pages.map((page) => ({
+    ...page,
+    columns: page.columns.map((col) =>
+      col.id === columnId ? { ...col, sectionIds: orderedIds } : col,
+    ),
+  }));
+}
+
+/** 跨列/跨页：把 section 从旧位置移到新列 index */
+export function transferSection(
+  pages: ResumePage[],
+  sectionId: string,
+  toColumnId: string,
+  toIndex: number,
+): ResumePage[] {
+  const removed = removeSectionId(pages, sectionId);
+  return removed.map((page) => ({
+    ...page,
+    columns: page.columns.map((col) => {
+      if (col.id !== toColumnId) return col;
+      const ids = [...col.sectionIds];
+      const at = Math.max(0, Math.min(toIndex, ids.length));
+      ids.splice(at, 0, sectionId);
+      return { ...col, sectionIds: ids };
+    }),
+  }));
+}
+
 export function getPrimaryColumnId(pages: ResumePage[]): string | null {
   return pages[0]?.columns[0]?.id ?? null;
 }

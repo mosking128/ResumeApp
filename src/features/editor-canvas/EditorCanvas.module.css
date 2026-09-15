@@ -296,15 +296,69 @@
   border-radius: 4px;
   padding: 0;
   margin: 0;
-  cursor: pointer;
+  cursor: default;
   transition: background 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
 }
 
 .sectionBlock:hover {
   background: rgba(15, 118, 110, 0.04);
 }
 
+.sectionDragging {
+  opacity: 0.55;
+  box-shadow: 0 8px 20px rgba(28, 25, 23, 0.12);
+  z-index: 5;
+}
+
 .sectionSelected {
   box-shadow: inset 0 0 0 1.5px var(--accent);
   background: rgba(15, 118, 110, 0.04);
+}
+
+.sectionDragRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+  padding: 2px 2px 0;
+}
+
+.dragHandle {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  color: #a8a29e;
+  font-size: 12px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragHandle:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.sectionTitleChip {
+  font-size: 10px;
+  color: #a8a29e;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sectionBlock:hover .sectionTitleChip,
+.sectionDragging .sectionTitleChip,
+.sectionSelected .sectionTitleChip {
+  opacity: 1;
 }
