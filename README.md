@@ -44,6 +44,18 @@ On Windows you can double-click `start-dev.bat`.
 npm run build   # output in dist/
 ```
 
+### Desktop app (Electron)
+
+```bash
+# Run as a native window (loads dist)
+npm run electron:start
+
+# Installer / portable build → release/
+npm run electron:build
+```
+
+Or double-click `start-desktop.bat` on Windows.
+
 ---
 
 ## How to use

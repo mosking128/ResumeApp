@@ -44,6 +44,18 @@ Windows 可双击 `start-dev.bat`。
 npm run build   # 产物在 dist/
 ```
 
+### 桌面版（Electron）
+
+```bash
+# 打包成独立窗口（加载 dist）
+npm run electron:start
+
+# 安装包 / 便携版 → release/
+npm run electron:build
+```
+
+也可双击 `start-desktop.bat` 启动桌面应用。
+
 ---
 
 ## 使用提示
