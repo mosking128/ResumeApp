@@ -1,83 +1,85 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import { ToastStack, toast } from '@/components/Toast';
-import {
-  MAX_PAGES,
-  MIN_PAGES,
-  createBlankDocument,
-  createBlankPage,
-} from '@/domain/types';
+import { MAX_PAGES, type SectionType } from '@/domain/types';
 import { TopBar } from '@/features/app-shell/TopBar';
+import { useAutosave, useHydrateApp } from '@/features/autosave/useAutosave';
 import { EditorCanvas } from '@/features/editor-canvas/EditorCanvas';
 import { ModulePalette } from '@/features/module-palette/ModulePalette';
 import { PropertyPanel } from '@/features/property-panel/PropertyPanel';
+import { useArchiveStore } from '@/stores/archiveStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import styles from './App.module.css';
 
-const initialDoc = createBlankDocument('classic-single');
-
 export default function App() {
-  const [templateId, setTemplateId] = useState(initialDoc.templateId);
-  const [pages, setPages] = useState(initialDoc.pages);
-  const [selectedPageId, setSelectedPageId] = useState(initialDoc.pages[0]!.id);
-  const [scale, setScale] = useState(1);
-  const [autosaveIntervalMs, setAutosaveIntervalMs] = useState<number | null>(30_000);
+  useHydrateApp();
+  useAutosave();
+
+  const hydrated = useArchiveStore((s) => s.hydrated);
+  const dbError = useArchiveStore((s) => s.error);
+  const doc = useArchiveStore((s) => s.doc);
+  const dirty = useArchiveStore((s) => s.dirty);
+  const saving = useArchiveStore((s) => s.saving);
+  const lastSavedAt = useArchiveStore((s) => s.lastSavedAt);
+  const scale = useArchiveStore((s) => s.scale);
+  const selectedSectionId = useArchiveStore((s) => s.selectedSectionId);
+  const autosaveIntervalMs = useSettingsStore((s) => s.settings.autosaveIntervalMs);
+
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [inputLocked, setInputLocked] = useState(false);
   const [overflowOpen, setOverflowOpen] = useState(false);
-  const [saveLabel, setSaveLabel] = useState('空白文档 · 未持久化');
 
+  const pages = doc?.pages ?? [];
+  const sections = doc?.sections ?? [];
+  const templateId = doc?.templateId ?? 'steady-classic';
   const pageCount = pages.length;
 
-  const handleTemplateChange = useCallback(
-    (id: string) => {
-      setTemplateId(id);
-      toast('模板皮肤已切换（布局重排逻辑即将接入）');
-    },
-    [],
-  );
+  useEffect(() => {
+    if (!pages.length) return;
+    if (!selectedPageId || !pages.some((p) => p.id === selectedPageId)) {
+      setSelectedPageId(pages[0]!.id);
+    }
+  }, [pages, selectedPageId]);
 
-  const handleAddPage = useCallback(() => {
-    setPages((prev) => {
-      if (prev.length >= MAX_PAGES) {
-        toast('已达到最大 3 页');
-        return prev;
-      }
-      const page = createBlankPage(templateId);
-      return [...prev, page];
-    });
-  }, [templateId]);
+  const saveLabel = useMemo(() => {
+    if (dbError) return dbError;
+    if (!hydrated) return '正在打开本地数据库…';
+    if (saving) return '正在保存…';
+    if (dirty) return '有未保存更改';
+    if (lastSavedAt) {
+      const d = new Date(lastSavedAt);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `已保存 ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+    return '已保存';
+  }, [dbError, hydrated, saving, dirty, lastSavedAt]);
 
-  const handleRemovePage = useCallback((id: string) => {
-    setPages((prev) => {
-      if (prev.length <= MIN_PAGES) {
-        toast('至少保留 1 页');
-        return prev;
-      }
-      const next = prev.filter((p) => p.id !== id);
-      setSelectedPageId((cur) => (cur === id ? (next[0]?.id ?? null) : cur));
-      return next;
-    });
+  const handleTemplateChange = useCallback((id: string) => {
+    useArchiveStore.getState().setTemplateId(id);
+    toast('已切换模板');
   }, []);
 
-  const handleSave = useCallback(() => {
-    setSaveLabel('已保存（内存）· 逻辑即将接入 IDB');
-    toast('本地持久化将在 M1 接入，当前为 UI 闭环');
+  const handleAutosaveChange = useCallback((ms: number | null) => {
+    void useSettingsStore.getState().setAutosaveInterval(ms);
+    toast(ms === null ? '已关闭自动保存' : `自动保存间隔：${ms / 1000}s`);
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    await useArchiveStore.getState().saveNow();
+    const s = useArchiveStore.getState();
+    toast(s.error ? `保存失败：${s.error}` : '已保存到本地');
   }, []);
 
   const handlePrint = useCallback(() => {
-    setSaveLabel('正在准备打印 / 另存为 PDF…');
-    // 给浏览器一帧，便于用户看到状态
-    window.requestAnimationFrame(() => {
-      window.print();
-      setSaveLabel('已调起打印对话框');
-    });
+    window.requestAnimationFrame(() => window.print());
   }, []);
 
   const handleConfirmAddPage = useCallback(() => {
-    handleAddPage();
+    if (pageCount < MAX_PAGES) useArchiveStore.getState().addPage();
     setOverflowOpen(false);
     setInputLocked(false);
-  }, [handleAddPage]);
+  }, [pageCount]);
 
   const handleCancelOverflow = useCallback(() => {
     setOverflowOpen(false);
@@ -96,12 +98,27 @@ export default function App() {
     });
   }, []);
 
-  const saveStateText = useMemo(() => {
-    if (inputLocked) return '写入已锁定 · 请加页或删减';
-    if (autosaveIntervalMs === null) return `自动保存已关闭 · ${saveLabel}`;
-    const sec = Math.round(autosaveIntervalMs / 1000);
-    return `${sec}s 自动保存 · ${saveLabel}`;
-  }, [autosaveIntervalMs, inputLocked, saveLabel]);
+  if (!hydrated) {
+    return (
+      <div className={`app-shell ${styles.shell}`} style={{ placeItems: 'center' }}>
+        <p style={{ color: 'var(--muted)' }}>正在打开本地简历库…</p>
+      </div>
+    );
+  }
+
+  if (dbError) {
+    return (
+      <div className={`app-shell ${styles.shell}`} style={{ placeItems: 'center' }}>
+        <div style={{ textAlign: 'center', maxWidth: 420 }}>
+          <h2>无法打开本地数据库</h2>
+          <p style={{ color: 'var(--muted)' }}>{dbError}</p>
+          <Button variant="primary" onClick={() => void useArchiveStore.getState().hydrate()}>
+            重试
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`app-shell ${styles.shell}`}>
@@ -110,33 +127,37 @@ export default function App() {
         templateId={templateId}
         autosaveIntervalMs={autosaveIntervalMs}
         scale={scale}
+        saving={saving}
         onTemplateChange={handleTemplateChange}
-        onAutosaveChange={(ms) => {
-          setAutosaveIntervalMs(ms);
-          toast(ms === null ? '已关闭自动保存' : `自动保存间隔：${ms / 1000}s`);
-        }}
-        onScaleChange={setScale}
-        onSave={handleSave}
+        onAutosaveChange={handleAutosaveChange}
+        onScaleChange={(s) => useArchiveStore.getState().setScale(s)}
+        onSave={() => void handleSave()}
         onPrint={handlePrint}
-        saveLabel={saveStateText}
+        saveLabel={saveLabel}
       />
 
       <div className={styles.body}>
-        <ModulePalette />
+        <ModulePalette
+          disabled={inputLocked}
+          onAdd={(type: SectionType) => {
+            useArchiveStore.getState().addSection(type);
+            toast('已添加模块');
+          }}
+        />
         <EditorCanvas
           pages={pages}
+          sections={sections}
           scale={scale}
           templateId={templateId}
           selectedPageId={selectedPageId}
+          selectedSectionId={selectedSectionId}
           onSelectPage={setSelectedPageId}
-          onAddPage={handleAddPage}
-          onRemovePage={handleRemovePage}
+          onSelectSection={(id) => useArchiveStore.getState().selectSection(id)}
+          onAddPage={() => useArchiveStore.getState().addPage()}
+          onRemovePage={(id) => useArchiveStore.getState().removePage(id)}
+          onAddSection={(type) => useArchiveStore.getState().addSection(type)}
         />
-        <PropertyPanel
-          selectedPageId={selectedPageId}
-          locked={inputLocked}
-          onToggleLockDemo={handleToggleLockDemo}
-        />
+        <PropertyPanel doc={doc} locked={inputLocked} onToggleLockDemo={handleToggleLockDemo} />
       </div>
 
       <Modal

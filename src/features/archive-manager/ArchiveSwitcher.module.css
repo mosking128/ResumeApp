@@ -1,0 +1,141 @@
+.root {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  max-width: 220px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--shell-bg);
+  font-size: var(--fs-13);
+}
+
+.trigger:hover {
+  border-color: #d6d3d1;
+}
+
+.triggerLabel {
+  color: var(--muted);
+  font-size: var(--fs-12);
+}
+
+.triggerName {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caret {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  width: 320px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+
+.menuHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 320px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item {
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid transparent;
+}
+
+.item:hover {
+  background: var(--shell-bg);
+}
+
+.selected {
+  background: var(--accent-soft);
+  border-color: #99f6e4;
+}
+
+.itemMain {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.itemName {
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.itemMeta {
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+
+.itemActions {
+  display: flex;
+  gap: 10px;
+  padding-left: 2px;
+}
+
+.itemActions button {
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+
+.itemActions button:hover {
+  color: var(--accent);
+}
+
+.itemActions .danger:hover {
+  color: var(--danger);
+}
+
+.editRow {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  min-width: 0;
+}

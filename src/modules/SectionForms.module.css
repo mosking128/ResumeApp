@@ -1,0 +1,112 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fafaf9;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-12);
+}
+
+.inlineCard {
+  display: grid;
+  grid-template-columns: 1fr 72px 28px;
+  gap: 6px;
+  align-items: center;
+}
+
+.inlineCard input {
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  min-width: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+
+.field input,
+.field textarea {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  width: 100%;
+  resize: vertical;
+}
+
+.field input:disabled,
+.field textarea:disabled {
+  background: var(--shell-bg);
+}
+
+.remove {
+  color: var(--danger);
+  font-size: var(--fs-12);
+}
+
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blocksHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--fs-12);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.blockCard {
+  border: 1px dashed #d6d3d1;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fff;
+}
+
+.blockCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-12);
+}
+
+.fieldPair {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 8px;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--muted);
+}

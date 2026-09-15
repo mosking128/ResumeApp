@@ -1,0 +1,413 @@
+/* ===== 模板全局样式（按 data-template 切换，不进 CSS Modules） ===== */
+
+/* ---------- 稳重单页 steady-classic ---------- */
+[data-template='steady-classic'] .rv-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 5px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+[data-template='steady-classic'] .rv-title-text {
+  position: relative;
+  color: #fff;
+  background: linear-gradient(105deg, #3d4f6d 0%, #4a5d7a 55%, #5a6f8e 100%);
+  padding: 7px 18px 7px 36px;
+  font-size: 14px;
+  font-weight: 600;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 100%, 12px 100%);
+  white-space: nowrap;
+}
+
+[data-template='steady-classic'] .rv-title-text::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid #fff;
+  border-radius: 2px;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+[data-template='steady-classic'] .rv-title-rule {
+  flex: 1;
+  height: 0;
+  border-top: 2px solid #4a5d7a;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  padding-top: 4px;
+  box-sizing: content-box;
+}
+
+[data-template='steady-classic'] .rv-meta-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+[data-template='steady-classic'] .rv-meta-date {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+[data-template='steady-classic'] .rv-meta-org {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+/* 三列行的最后一项（职位/角色）靠右顶格 */
+[data-template='steady-classic'] .rv-meta-row:not(.rv-meta-row-4) .rv-meta-role {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+
+/* 四列行中间两列居中，最后一列靠右 */
+[data-template='steady-classic'] .rv-meta-row-4 .rv-meta-role {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+[data-template='steady-classic'] .rv-meta-extra {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+
+[data-template='steady-classic'] .rv-contact::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border: 1.5px solid #4a5d7a;
+  border-radius: 50%;
+}
+
+[data-template='steady-classic'] .rv-photo {
+  border: 1px solid #4a5d7a;
+  background: linear-gradient(180deg, #eef1f6 0%, #e2e8f0 100%);
+  color: #4a5d7a;
+}
+
+/* ---------- 简约横幅 clean-navy ---------- */
+[data-template='clean-navy'] .rv-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 3px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+[data-template='clean-navy'] .rv-title-text {
+  color: #fff;
+  background: #1f3a5f;
+  padding: 5px 24px 5px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  white-space: nowrap;
+}
+
+[data-template='clean-navy'] .rv-title-rule {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, #6b7280 0%, #9ca3af 35%, transparent 100%);
+  opacity: 0.65;
+}
+
+[data-template='clean-navy'] .rv-meta-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+[data-template='clean-navy'] .rv-meta-date {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+[data-template='clean-navy'] .rv-meta-org {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+[data-template='clean-navy'] .rv-meta-row:not(.rv-meta-row-4) .rv-meta-role {
+  text-align: right;
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+}
+
+[data-template='clean-navy'] .rv-meta-row-4 .rv-meta-role {
+  text-align: center;
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+}
+
+[data-template='clean-navy'] .rv-meta-extra {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+
+[data-template='clean-navy'] .rv-desc-label {
+  font-weight: 700;
+  color: #1f3a5f;
+}
+
+[data-template='clean-navy'] .rv-photo {
+  border: 1px solid #c5cdd8;
+  background: #f3f6fa;
+  color: #1f3a5f;
+}
+
+[data-template='clean-navy'] .rv-skill-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+[data-template='clean-navy'] .rv-skill-item::before {
+  content: '•';
+  margin-right: 8px;
+  color: #1f3a5f;
+}
+
+/* ---------- 极简黑白 minimal-black ---------- */
+[data-template='minimal-black'] .rv-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 3px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+[data-template='minimal-black'] .rv-title-text {
+  color: #111;
+  white-space: nowrap;
+}
+
+[data-template='minimal-black'] .rv-title-rule {
+  flex: 1;
+  height: 1px;
+  background: #111;
+}
+
+[data-template='minimal-black'] .rv-meta-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+[data-template='minimal-black'] .rv-meta-date {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+[data-template='minimal-black'] .rv-meta-org {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+[data-template='minimal-black'] .rv-meta-row:not(.rv-meta-row-4) .rv-meta-role {
+  text-align: right;
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+}
+
+[data-template='minimal-black'] .rv-meta-row-4 .rv-meta-role {
+  text-align: center;
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+}
+
+[data-template='minimal-black'] .rv-meta-extra {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+
+[data-template='minimal-black'] .rv-bullets {
+  list-style: none;
+  padding-left: 0.1em;
+}
+
+[data-template='minimal-black'] .rv-bullets li::before {
+  content: '★';
+  display: inline-block;
+  width: 1.15em;
+  font-size: 0.72em;
+  vertical-align: 0.12em;
+}
+
+[data-template='minimal-black'] .rv-skill-list {
+  list-style: none;
+  padding-left: 0.1em;
+}
+
+[data-template='minimal-black'] .rv-skill-item::before {
+  content: '★ ';
+  font-size: 0.72em;
+  vertical-align: 0.12em;
+}
+
+[data-template='minimal-black'] .rv-photo {
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+}
+
+/* 共用基础类（模板无关的结构仍可在组件 CSS） */
+.rv-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.rv-title-text {
+  white-space: nowrap;
+}
+
+.rv-title-rule {
+  flex: 1;
+  min-width: 20px;
+}
+
+.rv-meta-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.rv-meta-date,
+.rv-meta-org,
+.rv-meta-role,
+.rv-meta-extra {
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+}
+
+.rv-meta-date {
+  text-align: left;
+}
+
+.rv-meta-org {
+  text-align: center;
+}
+
+/* 默认中间项居中；最后一项靠右 */
+.rv-meta-row:not(.rv-meta-row-4) .rv-meta-role {
+  text-align: right;
+}
+
+.rv-meta-row-4 .rv-meta-role {
+  text-align: center;
+}
+
+.rv-meta-extra {
+  text-align: right;
+}
+
+.rv-bullets {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.rv-bullets li {
+  margin-bottom: 2px;
+}
+
+.rv-skill-list {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+
+.rv-desc-label {
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+.rv-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.rv-block {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.rv-block .rv-desc-label {
+  font-weight: 700;
+}
+
+.rv-photo {
+  width: 92px;
+  height: 120px;
+  border: 1px dashed #9ca3af;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: #9ca3af;
+  flex-shrink: 0;
+  background: #f9fafb;
+}
+
+.rv-contact {
+  font-size: 12.5px;
+}

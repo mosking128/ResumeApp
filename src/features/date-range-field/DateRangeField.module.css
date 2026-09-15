@@ -1,0 +1,45 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+
+.inputs {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 6px;
+}
+
+.inputs select {
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0 6px;
+  background: var(--panel);
+  min-width: 0;
+}
+
+.present {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-13);
+}

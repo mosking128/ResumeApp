@@ -1,6 +1,6 @@
 import { Button } from '@/components/Button';
-import { toast } from '@/components/Toast';
 import { TEMPLATES } from '@/domain/types';
+import { ArchiveSwitcher } from '@/features/archive-manager/ArchiveSwitcher';
 import styles from './TopBar.module.css';
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
   onSave: () => void;
   onPrint: () => void;
   saveLabel: string;
+  saving?: boolean;
 }
 
 const AUTOSAVE_OPTIONS: { label: string; value: number | null }[] = [
@@ -34,6 +35,7 @@ export function TopBar({
   onSave,
   onPrint,
   saveLabel,
+  saving = false,
 }: Props) {
   return (
     <header className={`topbar ${styles.bar}`}>
@@ -42,14 +44,7 @@ export function TopBar({
           <span className={styles.logo} />
           简历编辑器
         </div>
-        <button
-          type="button"
-          className={styles.archiveBtn}
-          onClick={() => toast('多档案存档：界面已就位，逻辑即将接入')}
-        >
-          我的简历
-          <span className={styles.caret}>▾</span>
-        </button>
+        <ArchiveSwitcher />
         <span className={styles.badge} title="A4 页数">
           {pageCount} / 3 页
         </span>
@@ -105,8 +100,8 @@ export function TopBar({
 
       <div className={styles.right}>
         <span className={styles.saveState}>{saveLabel}</span>
-        <Button variant="ghost" onClick={onSave}>
-          保存
+        <Button variant="ghost" onClick={onSave} disabled={saving}>
+          {saving ? '保存中…' : '保存'}
         </Button>
         <Button variant="primary" onClick={onPrint}>
           导出 PDF

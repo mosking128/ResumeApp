@@ -8,4 +8,5 @@ dist
 .mimocode
 .playwright-cli
 vite.log
-screenshot-app.png
+screenshot*.png
+assets/
