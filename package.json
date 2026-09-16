@@ -2,6 +2,9 @@
   "name": "resume-app",
   "private": true,
   "version": "0.1.0",
+  "description": "Local-first resume editor (desktop)",
+  "author": "Mosking <mosking128@users.noreply.github.com>",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
