@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 const sharp = require('sharp');
 
 const svgPath = 'build/icons-concepts/icon-05-seal.svg';
-const outDir = 'build/icons';
+const outDir = 'icons';
 mkdirSync(outDir, { recursive: true });
 
 const sizes = [16, 32, 48, 64, 128, 256];

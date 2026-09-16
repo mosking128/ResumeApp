@@ -7,7 +7,7 @@ files:
   - dist/**/*
   - package.json
 win:
-  icon: build/icons/icon.ico
+  icon: icons/icon.ico
   target:
     - target: nsis
       arch:
@@ -21,8 +21,8 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   artifactName: ResumeApp-${version}-setup.${ext}
-  installerIcon: build/icons/icon.ico
-  uninstallerIcon: build/icons/icon.ico
+  installerIcon: icons/icon.ico
+  uninstallerIcon: icons/icon.ico
 portable:
   artifactName: ResumeApp-${version}-portable.${ext}
 publish: null
